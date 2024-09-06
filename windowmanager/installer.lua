@@ -41,10 +41,11 @@ fs.makeDirectory("/usr/lib/windowmanager/driver")
 fs.makeDirectory("/usr/lib/windowmanager/libs")
 fs.makeDirectory("/usr/lib/windowmanager/programs")
 fs.makeDirectory("/usr/lib/windowmanager/symbols")
+fs.makeDirectory("/etc/windowmanager")
 print("Installing...")
-for file in files do
+for _, file in ipairs(files) do
     io.write("-> Installing " .. file)
-    require("shell").execute("wget -q -f https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/windowmanager/" .. file)
+    require("shell").execute("wget -q -f https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/windowmanager/" .. file .. " " .. file)
     io.write(" [DONE]\n")
 end
 print("running setup...")
