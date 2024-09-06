@@ -1,0 +1,403 @@
+Gui system
+What you need:
+Copy wm.lua and guiElements.lua into a directory, where you normaly store your libs.
+/lib /usr/lib
+
+
+Example of a simple basic program:
+-------------------------------------------------------------------------------
+local component = require("component")
+local gpu = component.gpu
+local computer = require("computer")
+local event = require("event")
+local ser = require("serialization")
+local wm = require("wm")
+local gui = require("guiElements")
+
+function callback(self, win)
+  wm.closeWindow(win)
+end
+
+wm.startGui()
+
+testwindow = wm.newWindow(35, 2, 40, 20, "Test window")
+
+button = gui.newButton(1, 1, 19, 1, "close", callback)
+wm.addElement(testwindow, button)
+
+wm.raiseWindow(testwindow)
+
+running = true
+while running == true do
+  os.sleep(0)
+end
+
+wm.exitGui()
+-------------------------------------------------------------------------------
+
+Line by line now:-)
+-------------------------------------------------------------------------------
+local wm = require("wm")
+local gui = require("guiElements")
+
+This you need to load the libs.
+-------------------------------------------------------------------------------
+
+
+wm.startGui()
+
+Start the window manager and the program manager
+-------------------------------------------------------------------------------
+
+
+testwindow = wm.newWindow(35, 2, 40, 20, "Test window")
+
+Create a new window with x = 35, y = 2 as the top-left corner. It's the position, where the window shows a #
+Size is 40 width and 20 height. Text of the Window as last argument.
+-------------------------------------------------------------------------------
+
+
+button = gui.newButton(1, 1, 19, 1, "close", callback)
+wm.addElement(testwindow, button)
+
+Create a new element (as to see, it's a button) and add the element to our window.
+-------------------------------------------------------------------------------
+
+
+wm.raiseWindow(testwindow)
+
+Raise the window from lowered status to normal displaying. If you don't do, the window will be
+there, but it is lowered. Simple click some where on the desktop, outside a window and a window
+list will popup. Click on the window, you want to raise.
+Click on the hash (#) and drag/drop the window top line to a new position to move a window.
+A click on the X will close the window and a click on the _ will lower it and it will only be
+seen in the window list.
+
+
+-------------------------------------------------------------------------------
+function callback(self, win)
+  wm.closeWindow(win)
+end
+
+This is the callback we defined in the creation of the button. It simply close the window, where
+it is called from.
+All elements returns in callbacks the window and the element it self. So you have full access over all
+needed data.
+-------------------------------------------------------------------------------
+
+
+
+Basic functions:
+
+
+wm.startGui()
+Start the window manager and the program manager
+
+wm.exitGui()
+Close the gui system. Attention: You need to reboot after all. Trying to fix this problem.
+
+wm.setTopText(text)
+Set the text on top of the screen.
+
+wm.redraw()
+Redraw the whole screen.
+
+wm.startProgram(path, id)
+
+wm.getVersion()
+
+wm.setUserLevel(level)
+Set the user level of the user. Normaly not used, only intern by user manager driver.
+
+wm.getUserLevel()
+Returns the level of the user. If 100 system is running without user manager driver.
+
+Both functions are used by the user management driver. No need for user to use them.
+wm.getUsername()
+wm.setUsername(name)
+
+-------------------------------------------------------------------------------
+
+
+Functions for windows:
+
+
+wm.newWindow(x, y, w, h, text)
+Create a new window.
+
+wm.raiseWindow(self)
+Show window on screen.
+
+wm.closeWindow(self)
+Close a window.
+
+wm.lowerWindow(self)
+Lower a window.
+
+wm.resizeWindow(self, w, h)
+Set a new size to the window.
+
+wm.disableWindowButtons(self, state)
+Disable/enable the close and the lower button.
+
+wm.setWindowSticky(self, state)
+Disable movement of window.
+
+wm.hideWindow(self, state)
+Hide a window from the window list, even when it is lowered.
+
+wm.setOnCloseCallback(self, callback)
+Callback that will called, when window is closed. If callback returns false, the window will stay open.
+
+wm.setOnLowerCallback(self, callback)
+Callback that will called, when window is lowered.
+
+wm.setOnResizeCallback(self, callback)
+Callback that will called, when a window is raised to the screen.
+
+wm.getWindowInfo(self)
+Returns x,y,w,h,text and number of elements of a window.
+
+wm.setWindowResizable(self, state)
+Enables on screen resizable of the window. If true, you can click the lower-right corner of a window
+and drag/drop to new size. This is normaly disabled, because the screen will heavaly flicker.
+
+wm.getActiveWindow()
+Returns the active window.
+
+wm.useShadows(state)
+Switch shadows on and off
+
+wm.setBoxShadow(state)
+Select if shadows look like a box with diagonal edges. (works only, if useShadows is true)
+
+wm.getShadowState()
+wm.getShadowBoxed()
+wm.getWindowFrame()
+wm.setWindowFrame(num)
+
+wm.addElement(self, element)
+Adds an element to the window.
+
+wm.newElement(id, x, y, w, h, text, callback)
+This is normaly not needed. It's internal called from the gui system. Coders who want to make own
+elements can use it.
+
+-------------------------------------------------------------------------------
+
+Functions for menus 
+
+wm.newMenu(x, y, w, text, callback)
+Creates a new menu. Callback will get the number of the selected entry as agument.
+
+wm.insertMenu(self, entry)
+Insert an entry (just text) into the menu. 
+
+wm.removeMenu(self, entry)
+Removes the entry from the menu.
+
+wm.clearMenu(self)
+Clears a full menu from all entries.
+
+wm.setMenuCallback(self, callback)
+Set the callback of the menu.
+
+wm.drawMenu(self)
+Displays a menu on screen.
+
+wm.menuSetPosition(self, x, y)
+Changes the position of the menu.
+
+wm.menuUseFrame(self, state)
+Set to true to use frames and the menu text, or false for just a menu with only the entries.
+
+------------------------------------------------------------------------------
+Start menu 
+Best way to use the gui is to make code, that will be put into the start menu.
+Example is program_frame.lua. Just insert your program into the test.lua file.
+
+wm.addStartMenu(name, path, level)
+Name of the entry in Start menu, full path to the program and userlevel, if you use the user management driver (0-99).
+
+wm.exitProgram(id)
+Called internal from programs, on their exit.
+
+wm.enableStartMenu(state)
+Set to false, if you don't want to use the start menu functions.
+
+
+-------------------------------------------------------------------------------
+
+Program manager functions.
+If you have made a program for the gui system and you want to have it in your next program to without
+copying the code into your new program, you can simply use your code with some changes in the program manager.
+Have a look into plugin_framework.lua
+
+wm.newSymbol(icon, program, level)
+Creates a new symbol in the right-bottom corner of the screen. Icon is a single character and program the full
+path to the lua program.
+If you use the user management driver you can set the user level (0-99).
+
+wm.setSymbolIcon(self, icon)
+Change the icon.
+
+wm.setSymbolProgram(self, program)
+Change the program to start.
+
+wm.drawSymbol(self)
+Draw a symbol. Usefull to redraw symbols from programs to window manager.
+
+
+-------------------------------------------------------------------------------
+
+Functions for element manipulation.
+Most of the names are telling you, what they do.
+self is allways the element it self.
+win is allways the window the element belongs to.
+alignment can be "left", "center" or "right".
+autowordwrap will fit the text into the element. great for labels.
+state is allways true or false.
+
+guiElements.newElement(id, x, y, w, h, text)
+-guiElements.newRadioGroup(x, y, w, callback)
+-guiElements.newList(x, y, w, h, text, callback)
+-guiElements.newInput(x, y, w, text, callback)
+-guiElements.newCheckbox(x, y, text, callback)
+-guiElements.newHBar(x, y, w, h)
+guiElements.newVSlider(x, y, h, callback)
+guiElements.newHSlider(x, y, w, callback)
+-guiElements.newFrame(x, y, w, h)
+-guiElements.newLine(x, y, w)
+-guiElements.newLabel(x, y, w, h, text)
+-guiElements.newButton(x, y, w, h, text, callback)
+
+guiElements.fileselect(text)
+Opens a file selection dialog. Returns true and file/directory name if selected or false if canceled.
+
+guiElements.drawElement(win, self)
+  Draws an element. Call it after changeing something on an element, to redraw it.
+guiElements.setElementBackground(self, background)
+guiElements.setElementForeground(self, foreground)
+guiElements.setElementActiveBackground(self, background)
+guiElements.setElementActiveForeground(self, foreground)
+guiElements.setElementX(self, x)
+guiElements.setElementY(self, y)
+guiElements.setElementW(self, w)
+guiElements.setElementH(self, h)
+guiElements.setElementText(self, text)
+guiElements.setElementCallback(self, callback)
+guiElements.setElementAlignment(self, alignment)
+guiElements.setElementMax(self, max)
+guiElements.setElementMin(self, min)
+guiElements.setElementValue(self, value)
+guiElements.setElementState(self, state)
+guiElements.setElementSteps(self, steps)
+  Stepsize for bars and sliders.
+guiElements.setElementAutoWordWrap(self, state)
+guiElements.setElementSelected(self, state)
+guiElements.setElementProtected(self, state)
+  If true, input fields will only display *. good for passwords.
+guiElements.getElementBackground(self)
+guiElements.getElementForeground(self)
+guiElements.getElementActiveBackground(self)
+guiElements.getElementActiveForeground(self)
+guiElements.getElementX(self)
+guiElements.getElementY(self)
+guiElements.getElementW(self)
+guiElements.getElementH(self, h)
+guiElements.getElementText(self)
+guiElements.getElementAlignment(self)
+guiElements.getElementMax(self)
+guiElements.getElementMin(self)
+guiElements.getElementValue(self)
+guiElements.getElementState(self)
+guiElements.getElementAutoWordWrap(self)
+guiElements.getElementType(self)
+guiElements.getLastElement()
+guiElements.getElementProtected(self)
+guiElements.getElementSelected(self)
+
+guiElements.insertElementData(self, data)
+guiElements.removeElementData(self, num)
+guiElements.changeElementData(self, num, data)
+guiElements.clearElementData(self)
+  For lists
+  
+--------------------------------------------------------------------------------------------  
+Functions for coders who want make their own elements. Have a look into the guiElements.lua file
+to see, how they work. Normal users don't need this functions.
+
+guiElements.setElementType(self, type)
+guiElements.setElementDrawCallback(self, callback)
+guiElements.setElementHandleCallback(self, callback)
+guiElements.setElementUserData1(self, data)
+guiElements.setElementUserData2(self, data)
+guiElements.setElementUserData3(self, data)
+guiElements.getElementUserData1(self)
+guiElements.getElementUserData2(self)
+guiElements.getElementUserData3(self)
+guiElements.setElementIgnoreMouseBlock(self, state)
+guiElements.getColors()
+
+wm.blockMouse(state)
+wm.setMouseCallback(callback)
+wm.getColors()
+
+wm.registerDriver(name, description, copyright, version)
+wm.getDriverList()
+
+--------------------------------------------------------------------------------------------
+User management driver
+
+user.add(username, password, level)
+user.remove(username)
+user.changePassword(username, oldPassword, password)
+user.getActiveUser()
+user.getUserList()
+user.login()
+user.start()
+user.stop()
+
+--------------------------------------------------------------------------------------------
+Printserver driver
+
+printServer.addPrinter(name, addr, typ, position)
+printServer.getLocalPrinter()
+printServer.getStandardPrinter()
+printServer.setName(id, txt)
+printServer.setLocation(id, txt)
+printServer.setDescription(id, txt)
+printServer.setNetworkShare(id, state)
+printServer.getName(id)
+printServer.getLocation(id)
+printServer.getDescription(id)
+printServer.getNetworkShare(id)
+printServer.getPrinterList()
+printServer.newPrintjob(title, data, netAddress, printerID)
+printServer.printJobInsertLine(job, text)
+printServer.printJobInsertText(job, text)
+printServer.getPrintJobs(netAddress)
+printServer.getPrinterStatus(netAddress, printerID)
+printServer.cancelPrintJob(job)
+printServer.resumePrintJob(job)
+printServer.print(job, netAddress)
+printServer.isPrinting()
+printServer.setPrinterTimeout(t)
+printServer.getPrinterTimeout()
+printServer.printText(title, text)
+printServer.start()
+printServer.stop()
+printServer.showSelectPrinterDialog(fromManager)
+
+--------------------------------------------------------------------------------------------
+Network driver
+
+networkdriver.modemSend(addr, port, ...)
+networkdriver.modemBroadcast(port, ...)
+networkdriver.getModemPackets()
+networkdriver.openPort(service)
+networkdriver.start()
+networkdriver.stop()
+--------------------------------------------------------------------------------------------
+
+
