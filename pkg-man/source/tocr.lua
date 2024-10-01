@@ -2,7 +2,15 @@ local shell = require("shell")
 local fs    = require("filesystem")
 
 local args, ops = shell.parse(...)
-
+local function tblstring(table)
+	result = ""
+	for i, item in ipairs(table) do
+		for j, thing in ipairs(item) do
+			result = result .. tostring(thing) .. "\t"
+		end
+		result = result .. "\n"
+	end
+end
 installedlist = io.open("/etc/packlist.tc", "w")
 packages = {}
 packlist = pcall(installedlist:read("*a"))
@@ -109,7 +117,7 @@ if ops.r or ops.remove then
 	for _, package in ipairs(args) do
 		file = io.open("/usr/pkg/" .. package .. "_pkg.tc", "r")
 		contents = file:read("*a")
-		for line in contents:match("[^\r\n]+") do
+		for i, line in ipairs(contents:match("[^\r\n]+")) do
 			local name = line:match("^.+/(.+)$")
 			io.write("Removing " .. name)
 			fs.remove("/usr/bin/" .. name)
@@ -124,4 +132,6 @@ end
 if ops.u or ops.upgrade then
 	print("Preparing system upgrade...")
 end
-installedlist:write(packages)
+packages = tostring(packages)
+installedlist:write(tblstring(packages))
+installedlist:close()
