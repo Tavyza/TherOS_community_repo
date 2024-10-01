@@ -106,6 +106,7 @@ if ops.l or ops.list then
 	shell.execute("wget -f -q https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/repo_list.tc /tmp/repo_list.tc")
 	file = io.open("/tmp/repo_list.tc")
 	print(file:read("*a"))
+	file:close()
 end
 if ops.r or ops.remove then
 	print("The following packages will be removed: ")
@@ -117,6 +118,7 @@ if ops.r or ops.remove then
 	for _, package in ipairs(args) do
 		file = io.open("/usr/pkg/" .. package .. "_pkg.tc", "r")
 		contents = file:read("*a")
+		file:close()
 		for i, line in ipairs(contents:match("[^\r\n]+")) do
 			local name = line:match("^.+/(.+)$")
 			io.write("Removing " .. name)
