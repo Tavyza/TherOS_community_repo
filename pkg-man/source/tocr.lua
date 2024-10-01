@@ -109,7 +109,7 @@ if ops.r or ops.remove then
 	for _, package in ipairs(args) do
 		file = io.open("/usr/pkg/" .. package .. "_pkg.tc", "r")
 		contents = file:read("*a")
-		for line in contents:match("[^\r\n]+")
+		for line in contents:match("[^\r\n]+") do
 			local name = line:match("^.+/(.+)$")
 			io.write("Removing " .. name)
 			fs.remove("/usr/bin/" .. name)
