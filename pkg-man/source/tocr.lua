@@ -90,7 +90,7 @@ if ops.i or ops.install then
 			if fs.exists("/usr/bin/" .. name) then
 				print("[DONE]")
 				for _, item in ipairs(newpacks) do
-					table.insert(packages, newpacks)
+					table.insert(packages, item)
 				end 
 			else
 				print("Package failed to install.")
@@ -114,12 +114,13 @@ if ops.r or ops.remove then
 		print(arg)
 	end
 	io.write("Do you want to continue? [y/N]")
-	if not io.read() == "y" then return end
+	a = io.read()
+	if a:lower() ~= "y" then print("cancelled") return end
 	for _, package in ipairs(args) do
 		file = io.open("/usr/pkg/" .. package .. "_pkg.tc", "r")
 		contents = file:read("*a")
 		file:close()
-		for i, line in ipairs(contents:match("[^\r\n]+")) do
+		for line in string.gmatch(contents, "[^\r\n]+") do
 			local name = line:match("^.+/(.+)$")
 			io.write("Removing " .. name)
 			fs.remove("/usr/bin/" .. name)
@@ -134,6 +135,5 @@ end
 if ops.u or ops.upgrade then
 	print("Preparing system upgrade...")
 end
-packages = tostring(packages)
 installedlist:write(tblstring(packages))
 installedlist:close()
