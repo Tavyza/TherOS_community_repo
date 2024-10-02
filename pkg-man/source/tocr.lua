@@ -13,7 +13,7 @@ local function tblstring(table)
 end
 installedlist = io.open("/etc/packlist.tc", "w")
 packages = {}
-packlist = pcall(installedlist:read("*a"))
+packlist = installedlist:read("*a")
 if not packlist == "" or not packlist == nil then
 	for _, package in ipairs(string.gmatch(packlist, "[^\r\n]+")) do
 		table.insert(packages, package)
