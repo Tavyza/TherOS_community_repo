@@ -100,7 +100,9 @@ if ops.i or ops.install then
 end
 if ops.a or ops.all then
 	print("Installed packages: ")
-	print(tblstring(fs.list("/usr/pkg/")))
+	for file in fs.list("/usr/pkg/")
+		print(file)
+	end
 end
 if ops.l or ops.list then
 	shell.execute("wget -f -q https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/repo_list.tc /tmp/repo_list.tc")
