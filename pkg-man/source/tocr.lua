@@ -100,7 +100,7 @@ if ops.i or ops.install then
 end
 if ops.a or ops.all then
 	print("Installed packages: ")
-	for file in fs.list("/usr/pkg/")
+	for file in fs.list("/usr/pkg/") do
 		print(file)
 	end
 end
