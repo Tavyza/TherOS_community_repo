@@ -128,6 +128,7 @@ if ops.r or ops.remove then
 			fs.remove("/usr/bin/" .. name)
 			if not fs.exists("/usr/bin/" .. name) then
 				print("[DONE]")
+				fs.remove("/usr/pkg/" .. package .. "_pkg.tc")
 			else
 				print("[FAILED]")
 			end
