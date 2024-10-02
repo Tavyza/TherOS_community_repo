@@ -1,4 +1,6 @@
 ## LIST OF PROGRAMS 
-TherOS (unavailable)
+theros-core
+theros-apps
+snake
 windowmanager
 pkg-man

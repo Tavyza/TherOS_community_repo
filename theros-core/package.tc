@@ -1,0 +1,4 @@
+https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/env/main.lua
+https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/boot/94_therboot.lua
+https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/changelog
+https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/util/therterm.lua
