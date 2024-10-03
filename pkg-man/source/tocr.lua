@@ -57,6 +57,7 @@ if ops.i or ops.install then
 	dependf = io.open("/tmp/dependencies.tc")
 	depends = dependf:read("*a")
 	dependf:close()
+  fs.remove("/tmp/dependencies.tc")
 	if depends ~= nil or depends ~= "" then
 		for line in string.gmatch(depends, "[^\r\n]+") do
 			print(line)
