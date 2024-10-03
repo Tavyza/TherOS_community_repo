@@ -183,7 +183,7 @@ if ops.b or ops.build then
 	fs.copy("/usr/bin/therterm.lua", "/sys/util/therterm.lua")
 	fs.copy("/usr/bin/94_therboot.lua", "/boot/94_therboot.lua")
 	io.write("Done. Reboot? [Y/n]")
-	yn == io.read()
+	local yn == io.read()
 	if yn:lower() ~= "n" then
 		print("Rebooting...") 
 		require("computer").shutdown(true)
