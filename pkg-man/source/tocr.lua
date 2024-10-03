@@ -28,6 +28,7 @@ tocr -r, --remove (package(s))  -- removes the specified packages from the syste
 tocr -u, --upgrade              -- upgrades all installed packages
 tocr -l, --list                 -- list all repository packages
 tocr -a, --all                  -- list all installed packages
+tocr -b, --build                -- build a TherOS system from theros-core and theros-apps
 
 Internet card required to install/update/list repository.
 Local packages may become a thing later on.
@@ -133,6 +134,59 @@ if ops.r or ops.remove then
 				print("[FAILED]")
 			end
 		end
+	end
+end
+if ops.b or ops.build then
+	print("Preparing to build TherOS...")
+	print("Looking for theros-core and theros-apps packages. (1/6)")
+	if not fs.exists("/usr/pkg/theros-core_pkg.tc") then
+		print("Not found theros-core_pkg.tc")
+		shell.execute("tocr -i theros-core")
+	end
+	if not fs.exists("/usr/pkg/theros-apps_pkg.tc") then
+		print("Not found theros-apps_pkg.tc")
+		shell.execute("tocr -i theros-apps")
+	end
+
+	print("Creating directories... (2/6)")
+	print("> /sys/apps...")
+	fs.makeDirectory("/sys/apps/")
+	print("> /sys/.config...")
+	fs.makeDirectory("/sys/.config/")
+	print("> /sys/env...")
+	fs.makeDirectory("/sys/env/")
+	print("> /sys/util...")
+	fs.makeDirectory("/sys/util/")
+	io.write("Tier 1/2 compatibility? [y/n]")
+	compat = io.read()
+	print("Copying config files... (3/6)")
+	if compat:lower() == "y" then
+		fs.copy("/usr/lib/gn_t1compat.tc", "/sys/.config/general.tc")
+	else
+		fs.copy("/usr/lib/general.tc", "/sys/.config/general.tc")
+	end
+	fs.copy("/usr/lib/version.tc", "/sys/.config/version.tc")
+	print("Copying libraries... (4/6)")
+	libraries = {"conlib.lua", "centertext.lua", "theros.lua", "fsutil.lua"}
+	for i, library in ipairs(libraries) do
+		print("> " .. library)
+		fs.copy("/usr/lib/" .. library, "/lib/" .. library)
+	end
+	print("Copying apps... (5/6)")
+	apps = {"installer.lua", "program_installer.lua", "file_manager.lua", "manual.lua"}
+	for i, app in ipairs(apps) do
+		print("> " .. app)
+		fs.copy("/usr/bin/" .. app, "/sys/apps/" .. app)
+	end
+	print("Copying env, therterm, boot... (6/6)")
+	fs.copy("/usr/bin/main.lua", "/sys/env/main.lua")
+	fs.copy("/usr/bin/therterm.lua", "/sys/util/therterm.lua")
+	fs.copy("/usr/bin/94_therboot.lua", "/boot/94_therboot.lua")
+	io.write("Done. Reboot? [Y/n]")
+	yn == io.read()
+	if yn:lower() ~= "n" then
+		print("Rebooting...") 
+		require("computer").shutdown(true)
 	end
 end
 if ops.u or ops.upgrade then
