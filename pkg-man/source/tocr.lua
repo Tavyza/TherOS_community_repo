@@ -162,7 +162,7 @@ if ops.b or ops.build then
 	compat = io.read()
 	print("Copying config files... (3/6)")
 	if compat:lower() == "y" then
-		fs.copy("/usr/lib/gn_t1compat.tc", "/sys/.config/general.tc")
+		fs.copy("/usr/lib/gn-t1compat.tc", "/sys/.config/general.tc")
 	else
 		fs.copy("/usr/lib/general.tc", "/sys/.config/general.tc")
 	end
