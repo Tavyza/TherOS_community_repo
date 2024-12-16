@@ -192,6 +192,8 @@ if ops.b or ops.build then
 end
 if ops.u or ops.upgrade then
 	print("Preparing system upgrade...")
+	print("[ERROR] FUNCTION NOT COMPLETED YET")
+	return
 end
 installedlist:write(tblstring(packages))
 installedlist:close()
