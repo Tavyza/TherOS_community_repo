@@ -4,24 +4,18 @@ local int   = require("internet")
 
 local args, ops = shell.parse(...)
 local function tblstring(table)
-	result = ""
+	local result = ""
 	for i, item in ipairs(table) do
 		for j, thing in ipairs(item) do
 			result = result .. tostring(thing) .. "\t"
 		end
 		result = result .. "\n"
 	end
-end
-installedlist = io.open("/etc/packlist.tc", "w")
-packages = {}
-packlist = installedlist:read("*a")
-if not packlist == "" or not packlist == nil then
-	for _, package in ipairs(string.gmatch(packlist, "[^\r\n]+")) do
-		table.insert(packages, package)
-	end
+	return result
 end
 
-help = [[
+
+local help = [[
 TherOS Community Repository (TOCR) Package Manager
 Usage:
 tocr -i, --install (package(s)) -- Installs the specified packages
@@ -46,12 +40,17 @@ PROGRAM-source:<url> alternatively, you can give a url instead of hosting it in 
 DEPEND / DEPEND-source  same as PROGRAM, but these files install to /usr/lib
 ]]
 local function install_from_internet(url, file)
-	local handle = int.open(url)
-	local data = handle:read("*a")
-	handle:close()
-	file = io.open(file, "w")
-	file:write(data)
-	file:close()
+	local result, response = int.request(url, nil, {["user-agent"]="TOCR/OpenComputers"})
+	if result then
+		local result, reason = pcall(function()
+		for chunk in response do
+			if not f then
+				f, reason = io.open(file, "w")
+			end
+			f:write(chunk)
+		end
+	end)
+	f:close()
 end
 if ops.h or ops.help or not next(ops) then
 	print(help)
@@ -69,12 +68,7 @@ if ops.i or ops.install then
 	for _, package in ipairs(args) do
 		print("Downloading " .. package .. "...")
 		io.write("Fetching package.tc for "..package.."...")
-		local handle = int.open("https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/"..package.."/package.tc") -- fetch the package file
-		local data = handle:read("*a") -- read
-		handle:close()
-		file = io.open("/usr/pkg/" .. package .. "_pkg.tc", "w") -- push the package file contents to a local file
-		file:write(data)
-		file:close()
+		install_from_internet("https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/"..package.."/"..package.."_pkg.tc", "/usr/pkg/" .. package .. "_pkg.tc")
 		if fs.exists("/usr/pkg/" .. package .. "_pkg.tc") then
 			print("[DONE]")
 		else
@@ -88,30 +82,33 @@ if ops.i or ops.install then
 		-- now we read the dependencies and install them
 		io.write("Downloading dependencies...")
 		local dependencies = {}
-		local depend-sources = {}
-		local depend-packages = {}
+		local depend_sources = {}
+		local depend_packages = {}
 		for line in string.gmatch(data, "[^\r\n]+") do
 			if line:match("DEPEND:") then
 				table.insert(dependencies, line:match("DEPEND:(.+)$"))
 			elseif line:match("DEPEND-source:") then
-				table.insert(sources, line:match("DEPEND-source:(.+)$"))
+				table.insert(depend_sources, line:match("DEPEND-source:(.+)$"))
 			elseif line:match("DEPEND-package:") then
-				table.insert(depend-packages, line:match("DEPEND-package:(.+)$"))
+				table.insert(depend_packages, line:match("DEPEND-package:(.+)$"))
 			end
 		end
-		if dependencies ~= nil or #dependencies ~= 0 then
-			for i, dependency in ipairs(dependencies) do -- reminder: formatted DEPEND:<file> (where the file is in the package folder)
+		if dependencies ~= nil and #dependencies > 0 then
+			for _, dependency in ipairs(dependencies) do -- reminder: formatted DEPEND:<file> (where the file is in the package folder)
 				install_from_internet("https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/"..package.."/"..dependency, "/usr/lib/" .. dependency:sub(8)) --trim src/lib/ from the dependency name
 			end
 		end
-		if sources ~= nil or #sources ~= 0 then
-			for i, source in ipairs(depend-sources) do
-				install_from_internet(source, "/usr/lib/" .. ) -- todo: match the file name in the source url
+		if depend_sources ~= nil and #depend_sources > 0 then
+			for _, source in ipairs(depend_sources) do
+				local filename = source:match("[^/]+$")
+				if filename then
+					install_from_internet(source, "/usr/lib/" .. filename)
+				end
 			end
 		end
 		-- collapse package table
-		deppacks = ""
-		for i, line in ipairs(depend-packages) do
+		local deppacks = ""
+		for _, line in ipairs(depend_packages) do
 			deppacks = deppacks .. " " .. line
 		end
 		if deppacks ~= "" then
@@ -124,7 +121,10 @@ if ops.i or ops.install then
 			install_from_internet("https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/"..package.."/"..data:match("PROGRAM:(.+)$"), "/usr/bin/" .. data:match("PROGRAM:(.+)$")) -- match filename after last slash
 		end
 		if data:match("PROGRAM-source:(.+)$") then
-			install_from_internet(data:match("PROGRAM-source:(.+)$"), "/usr/bin/" .. data:match("PROGRAM-source:(.+)/(.-)$"):match("[^/]+$")) -- match filename after last slash		
+			local filename = data:match("PROGRAM-source:(.+)$"):match("[^/]+$")
+			if filename then
+				install_from_internet(data:match("PROGRAM-source:(.+)$"), "/usr/bin/" .. filename)
+			end
 		end
 		print("[DONE]")
 	end
@@ -135,7 +135,7 @@ if ops.r or ops.remove then
 		print(arg)
 	end
 	io.write("Do you want to continue? [y/N]")
-	a = io.read()
+	local a = io.read()
 	if a:lower() ~= "y" then print("cancelled") return end
 	for _, package in ipairs(args) do
 		file = io.open("/usr/pkg/" .. package .. "_pkg.tc", "r")
@@ -153,6 +153,9 @@ if ops.r or ops.remove then
 			end
 		end
 	end
+end
+if ops.l or ops.list then
+	local handle = int.open("https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/")
 end
 if ops.b or ops.build then
 	print("Preparing to build TherOS...")
@@ -176,7 +179,7 @@ if ops.b or ops.build then
 	print("> /sys/util...")
 	fs.makeDirectory("/sys/util/")
 	io.write("Tier 1/2 compatibility? [y/n]")
-	compat = io.read()
+	local compat = io.read()
 	print("Copying config files... (3/6)")
 	if compat:lower() == "y" then
 		fs.copy("/usr/lib/gn-t1compat.tc", "/sys/.config/general.tc")
@@ -185,14 +188,14 @@ if ops.b or ops.build then
 	end
 	fs.copy("/usr/lib/version.tc", "/sys/.config/version.tc")
 	print("Copying libraries... (4/6)")
-	libraries = {"conlib.lua", "centertext.lua", "theros.lua", "fsutil.lua"}
-	for i, library in ipairs(libraries) do
+	local libraries = {"conlib.lua", "centertext.lua", "theros.lua", "fsutil.lua"}
+	for _, library in ipairs(libraries) do
 		print("> " .. library)
 		fs.copy("/usr/lib/" .. library, "/lib/" .. library)
 	end
 	print("Copying apps... (5/6)")
-	apps = {"installer.lua", "program_installer.lua", "file_manager.lua", "manual.lua"}
-	for i, app in ipairs(apps) do
+	local apps = {"installer.lua", "program_installer.lua", "file_manager.lua", "manual.lua"}
+	for _, app in ipairs(apps) do
 		print("> " .. app)
 		fs.copy("/usr/bin/" .. app, "/sys/apps/" .. app)
 	end
@@ -212,5 +215,5 @@ if ops.u or ops.upgrade then
 	print("[ERROR] FUNCTION NOT COMPLETED YET")
 	return
 end
-installedlist:write(tblstring(packages))
-installedlist:close()
+--installedlist:write(tblstring(packages))
+--installedlist:close()
