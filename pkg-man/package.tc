@@ -1,1 +1,4 @@
-https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/pkg-man/source/tocr.lua
+VERSION:2
+NAME:pkg-man
+DESC:package manager for TherOS. use "tocr"
+PROGRAM:src/tocr.lua

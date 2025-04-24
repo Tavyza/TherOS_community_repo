@@ -1,0 +1,20 @@
+pkg-man@2
+  package manager for TherOS. use "tocr"
+
+snake@1
+  snake game, filename is 'snak.lua'
+
+tc-read@0.0.1
+  A library to read TherOS config files.
+
+theros-apps@1.1
+  a collection of programs for TherOS
+
+theros-core@1.1
+  TherOS core package files and dependencies
+
+tnal@0.0.1
+  Tavyza Number Assembly Language, a compiled assembly language
+
+windowmanager@2.0
+  A simple window manager that has been moved to the TOCR. Note: This downloads 1 file, it is an installer. Run "windowmanager" to install.

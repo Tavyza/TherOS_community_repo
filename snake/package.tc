@@ -1,1 +1,4 @@
-https://raw.githubusercontent.com/FreekDS/OpenComputers-Snake/master/snak.lua
+VERSION:1
+NAME:snake
+DESC:snake game, filename is 'snak.lua'
+PROGRAM-source:https://raw.githubusercontent.com/FreekDS/OpenComputers-Snake/master/snak.lua

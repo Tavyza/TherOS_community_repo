@@ -1,1 +1,27 @@
-https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/windowmanager/windowmanager.lua
+VERSION:2.0
+NAME:windowmanager
+DESC:A simple window manager that has been moved to the TOCR. Note: This downloads 1 file, it is an installer. Run "windowmanager" to install.
+PROGRAM:src/bin/windowmanager.lua
+
+all in all, 20 dependencies (holy shit)
+including all of the dependencies because if it's just the installer then TOCR can't remove it.
+DEPEND:src/lib/doc/docu
+DEPEND:src/lib/driver/keyboarddriver.lua
+DEPEND:src/lib/driver/networkdriver.lua
+DEPEND:src/lib/driver/printserver.lua
+DEPEND:src/lib/driver/usermanagement.lua
+DEPEND:src/lib/libs/crypt.lua
+DEPEND:src/lib/libs/guiElements.lua
+DEPEND:src/lib/libs/wm.lua
+DEPEND:src/lib/programs/cardreader.lua
+DEPEND:src/lib/programs/cardwriter.lua
+DEPEND:src/lib/programs/driverinfo.lua
+DEPEND:src/lib/programs/messenger.lua
+DEPEND:src/lib/programs/program_frame.lua
+DEPEND:src/lib/programs/startmenu_config.lua
+DEPEND:src/lib/programs/usermanager.lua
+DEPEND:src/lib/symbols/energymonitor.lua
+DEPEND:src/lib/symbols/memorymonitor.lua
+DEPEND:src/lib/symbols/network.lua
+DEPEND:src/lib/symbols/plugin_framework.lua
+DEPEND:src/lib/symbols/printer.lua

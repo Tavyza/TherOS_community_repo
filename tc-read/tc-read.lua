@@ -1,0 +1,3 @@
+-- todo: read TherOS config files
+-- typically formatted variable:value
+-- value can be a string, number, or bool

@@ -1,5 +1,6 @@
 local shell = require("shell")
 local fs    = require("filesystem")
+local int   = require("internet")
 
 local args, ops = shell.parse(...)
 local function tblstring(table)
@@ -25,15 +26,33 @@ TherOS Community Repository (TOCR) Package Manager
 Usage:
 tocr -i, --install (package(s)) -- Installs the specified packages
 tocr -r, --remove (package(s))  -- removes the specified packages from the system
+tocr -s, --search (package)     -- searches for a package in the repository
 tocr -u, --upgrade              -- upgrades all installed packages
 tocr -l, --list                 -- list all repository packages
 tocr -a, --all                  -- list all installed packages
-tocr -b, --build                -- build a TherOS system from theros-core and theros-apps
+tocr -h, --help                 -- displays this help message
+
 
 Internet card required to install/update/list repository.
-Local packages may become a thing later on.
 ]]
+--[[
+package.tc layout:
+VERSION:<version>
+NAME:<package name>  the name of the package, decides what the package file is named when downloaded (example: tnal would produce a package file named tnal_pkg.tc)
+DESC:<description>  a short description of the package
 
+PROGRAM:<file>  the program the package puts in /usr/bin
+PROGRAM-source:<url> alternatively, you can give a url instead of hosting it in the repo
+DEPEND / DEPEND-source  same as PROGRAM, but these files install to /usr/lib
+]]
+local function install_from_internet(url, file)
+	local handle = int.open(url)
+	local data = handle:read("*a")
+	handle:close()
+	file = io.open(file, "w")
+	file:write(data)
+	file:close()
+end
 if ops.h or ops.help or not next(ops) then
 	print(help)
 end
@@ -46,71 +65,69 @@ if ops.i or ops.install then
 		print(package)
 	end
 	io.write("Do you want to continue? [Y/n]")
-	if io.read() == "n" then return end 
-	print("Installing...")
-	io.write("Checking for dependencies...")
+	if io.read():lower() ~= "y" then print("Operation cancelled.") return end
 	for _, package in ipairs(args) do
-		shell.execute("wget -f -q https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/" .. package .. "/dependencies.tc /tmp/dependencies.tc")
-	end
-	print("[DONE]")
-	io.write("Reading...")
-	dependf = io.open("/tmp/dependencies.tc")
-	depends = dependf:read("*a")
-	dependf:close()
-  fs.remove("/tmp/dependencies.tc")
-	if depends ~= nil or depends ~= "" then
-		for line in string.gmatch(depends, "[^\r\n]+") do
-			print(line)
-			shell.execute("wget -f -q " .. line .. " /usr/lib/" .. line:match("^.+/(.+)$"))
-		end
-	else
-		print("No dependencies.")
-	end
-	newpacks = {}
-	for i, package in ipairs(args) do
-		shell.execute("wget -f -q https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/" .. package .. "/package.tc /usr/pkg/" .. package .. "_pkg.tc")
-		table.insert(newpacks, package .. "_pkg.tc")
-		if not fs.exists("/usr/pkg/" .. package .. "_pkg.tc") then
-			print("Package " .. package .. " not found.")
-		end
-	end
-	local packagefile
-	io.write("Beginning installation...")
-	for i, package in ipairs(newpacks) do
-		file = io.open("/usr/pkg/" .. package)
-		if file then
-			packagefile = file:read("*a")
+		print("Downloading " .. package .. "...")
+		io.write("Fetching package.tc for "..package.."...")
+		local handle = int.open("https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/"..package.."/package.tc") -- fetch the package file
+		local data = handle:read("*a") -- read
+		handle:close()
+		file = io.open("/usr/pkg/" .. package .. "_pkg.tc", "w") -- push the package file contents to a local file
+		file:write(data)
+		file:close()
+		if fs.exists("/usr/pkg/" .. package .. "_pkg.tc") then
+			print("[DONE]")
 		else
-			print("Where is the package file?")
+			print("\npackage.tc could not be fetched. Please make sure the package exists in the repository.")
 			return
 		end
-		file:close()
-		for line in string.gmatch(packagefile, "[^\r\n]+") do
-			io.write("Installing " .. line .. "...")
-			local name = line:match("^.+/(.+)$")
-			shell.execute("wget -f -q " .. line .. " /usr/bin/" .. name)
-			if fs.exists("/usr/bin/" .. name) then
-				print("[DONE]")
-				for _, item in ipairs(newpacks) do
-					table.insert(packages, item)
-				end 
-			else
-				print("Package failed to install.")
+		-- we still have the package.tc in the data variable, so let's use that
+		local version = data:match("VERSION:(.+)$")
+		local name = data:match("NAME:(.+)$")
+		local desc = data:match("DESC:(.+)$")
+		-- now we read the dependencies and install them
+		io.write("Downloading dependencies...")
+		local dependencies = {}
+		local depend-sources = {}
+		local depend-packages = {}
+		for line in string.gmatch(data, "[^\r\n]+") do
+			if line:match("DEPEND:") then
+				table.insert(dependencies, line:match("DEPEND:(.+)$"))
+			elseif line:match("DEPEND-source:") then
+				table.insert(sources, line:match("DEPEND-source:(.+)$"))
+			elseif line:match("DEPEND-package:") then
+				table.insert(depend-packages, line:match("DEPEND-package:(.+)$"))
 			end
 		end
+		if dependencies ~= nil or #dependencies ~= 0 then
+			for i, dependency in ipairs(dependencies) do -- reminder: formatted DEPEND:<file> (where the file is in the package folder)
+				install_from_internet("https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/"..package.."/"..dependency, "/usr/lib/" .. dependency:sub(8)) --trim src/lib/ from the dependency name
+			end
+		end
+		if sources ~= nil or #sources ~= 0 then
+			for i, source in ipairs(depend-sources) do
+				install_from_internet(source, "/usr/lib/" .. ) -- todo: match the file name in the source url
+			end
+		end
+		-- collapse package table
+		deppacks = ""
+		for i, line in ipairs(depend-packages) do
+			deppacks = deppacks .. " " .. line
+		end
+		if deppacks ~= "" then
+			shell.execute("tocr -i" .. deppacks) -- install dependency packages
+		end
 	end
-end
-if ops.a or ops.all then
-	print("Installed packages: ")
-	for file in fs.list("/usr/pkg/") do
-		print(file)
+	for _, package in ipairs(args) do
+		io.write("Installing " .. package .. "...")
+		if data:match("PROGRAM:(.+)$") then
+			install_from_internet("https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/"..package.."/"..data:match("PROGRAM:(.+)$"), "/usr/bin/" .. data:match("PROGRAM:(.+)$")) -- match filename after last slash
+		end
+		if data:match("PROGRAM-source:(.+)$") then
+			install_from_internet(data:match("PROGRAM-source:(.+)$"), "/usr/bin/" .. data:match("PROGRAM-source:(.+)/(.-)$"):match("[^/]+$")) -- match filename after last slash		
+		end
+		print("[DONE]")
 	end
-end
-if ops.l or ops.list then
-	shell.execute("wget -f -q https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/repo_list.tc /tmp/repo_list.tc")
-	file = io.open("/tmp/repo_list.tc")
-	print(file:read("*a"))
-	file:close()
 end
 if ops.r or ops.remove then
 	print("The following packages will be removed: ")

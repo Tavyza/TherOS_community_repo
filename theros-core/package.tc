@@ -1,4 +1,15 @@
-https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/env/main.lua
-https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/boot/94_therboot.lua
-https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/changelog
-https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/util/therterm.lua
+VERSION:1.1
+NAME:theros-core
+DESC:TherOS core package files and dependencies
+PROGRAM-source:https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/env/main.lua
+PROGRAM-source:https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/boot/94_therboot.lua
+PROGRAM-source:https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/changelog
+PROGRAM-source:https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/util/therterm.lua
+
+DEPEND-source:https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/lib/centertext.lua
+DEPEND-source:https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/lib/conlib.lua
+DEPEND-source:https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/lib/theros.lua
+DEPEND-source:https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/lib/fsutils.lua
+DEPEND-source:https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/.config/general.tc
+DEPEND-source:https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/.config/gn-t1compat.tc
+DEPEND-source:https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/.config/version.tc

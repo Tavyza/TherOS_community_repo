@@ -1,4 +1,10 @@
-https://raw.githubusercontent.com/Tavyza/TherOS/main/sys/apps/file_manager.lua
-https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/apps/program_installer.lua
-https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/apps/installer.lua
-https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/apps/manual.lua
+VERSION:1.1
+NAME:theros-apps
+DESC:a collection of programs for TherOS
+PROGRAM-source:https://raw.githubusercontent.com/Tavyza/TherOS/main/sys/apps/file_manager.lua
+PROGRAM-source:https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/apps/program_installer.lua
+PROGRAM-source:https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/apps/installer.lua
+PROGRAM-source:https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/apps/manual.lua
+
+deps
+DEPEND-package:theros-core
