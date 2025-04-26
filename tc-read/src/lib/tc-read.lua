@@ -5,7 +5,7 @@
 local tcread = {}
 
 function tcread.getvalue(filepath, var)
-  if not fs.exists(filepath) then
+  if require("filesystem").exists(filepath) ~= true then
     print("Error reading " .. filepath .. ": No such file or directory")
     return nil
   end
