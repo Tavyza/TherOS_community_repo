@@ -1,0 +1,8 @@
+VERSION:0.0.1
+NAME:abyss
+DESC:A window manager for TherOS
+
+PROGRAM:src/bin/abyss.lua
+DEPEND-package:core
+DEPEND:src/lib/win.lib
+DEPEND-package:prodeja

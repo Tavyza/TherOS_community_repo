@@ -13,8 +13,8 @@ theros-apps@1.1
 theros-core@1.1
   TherOS core package files and dependencies
 
-tnal@0.0.1
-  Tavyza Number Assembly Language, a compiled assembly language
+prodeja@0.0.1
+  A c-like compiled language for OpenComputers, based on the Progaza language.
 
 windowmanager@2.0
   A simple window manager that has been moved to the TOCR. Note: This downloads 1 file, it is an installer. Run "windowmanager" to install.

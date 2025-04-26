@@ -1,5 +1,5 @@
-VERSION:0.0.1
+VERSION:1
 NAME:tc-read
 DESC:A library to read TherOS config files.
 
-DEPEND:tc-read.lua
+DEPEND:src/lib/tc-read.lua

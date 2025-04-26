@@ -4,14 +4,14 @@ local int   = require("internet")
 
 local args, ops = shell.parse(...)
 local function tblstring(table)
-	local result = ""
-	for i, item in ipairs(table) do
-		for j, thing in ipairs(item) do
-			result = result .. tostring(thing) .. "\t"
-		end
-		result = result .. "\n"
-	end
-	return result
+    local result = ""
+    for i, item in ipairs(table) do
+        for j, thing in ipairs(item) do
+            result = result .. tostring(thing) .. "\t"
+        end
+        result = result .. "\n"
+    end
+    return result
 end
 
 
@@ -29,31 +29,56 @@ tocr -h, --help                 -- displays this help message
 
 Internet card required to install/update/list repository.
 ]]
---[[
-package.tc layout:
-VERSION:<version>
-NAME:<package name>  the name of the package, decides what the package file is named when downloaded (example: tnal would produce a package file named tnal_pkg.tc)
-DESC:<description>  a short description of the package
 
-PROGRAM:<file>  the program the package puts in /usr/bin
-PROGRAM-source:<url> alternatively, you can give a url instead of hosting it in the repo
-DEPEND / DEPEND-source  same as PROGRAM, but these files install to /usr/lib
-]]
 local function install_from_internet(url, file)
-	local result, response = int.request(url, nil, {["user-agent"]="TOCR/OpenComputers"})
-	if result then
-		local result, reason = pcall(function()
-		for chunk in response do
-			if not f then
-				f, reason = io.open(file, "w")
-			end
-			f:write(chunk)
-		end
-	end)
-	f:close()
+  if not int then
+    print("Internet component not available.")
+    return
+  end
+
+  -- make sure we can open the file first
+  local f, reason = io.open(file, "a")
+  if not f then
+    print("Error opening file for writing: " .. reason)
+    return
+  end
+  f:close()
+  f = nil
+
+  -- start the download
+  local ok, response = pcall(int.request, url, nil, {["user-agent"] = "TOCR/OpenComputers"})
+  if not ok then
+    print("HTTP request failed: " .. tostring(response))
+    return
+  end
+
+  local success, err = pcall(function()
+    for chunk in response do
+      if not f then
+        local f2, r2 = io.open(file, "wb")
+        assert(f2, "Failed opening file for writing: " .. tostring(r2))
+        f = f2
+      end
+      f:write(chunk)
+    end
+  end)
+
+  if not success then
+    print("Error during download: " .. tostring(err))
+    if f then f:close() end
+    fs.remove(file)
+    return
+  end
+
+  if f then
+    f:close()
+  end
 end
+
+
+
 if ops.h or ops.help or not next(ops) then
-	print(help)
+    print(help)
 end
 if ops.i or ops.install then
 	fs.makeDirectory("/usr/bin")
@@ -64,17 +89,20 @@ if ops.i or ops.install then
 		print(package)
 	end
 	io.write("Do you want to continue? [Y/n]")
-	if io.read():lower() ~= "y" then print("Operation cancelled.") return end
+	if io.read():lower() == "n" then print("Operation cancelled.") return end
 	for _, package in ipairs(args) do
 		print("Downloading " .. package .. "...")
 		io.write("Fetching package.tc for "..package.."...")
-		install_from_internet("https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/"..package.."/"..package.."_pkg.tc", "/usr/pkg/" .. package .. "_pkg.tc")
+		install_from_internet("https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/"..package.."/package.tc", "/usr/pkg/" .. package .. "_pkg.tc")
 		if fs.exists("/usr/pkg/" .. package .. "_pkg.tc") then
 			print("[DONE]")
 		else
 			print("\npackage.tc could not be fetched. Please make sure the package exists in the repository.")
 			return
 		end
+		local file = io.open("/usr/pkg/" .. package .. "_pkg.tc", "r")
+		data = file:read("*a")
+		file:close()
 		-- we still have the package.tc in the data variable, so let's use that
 		local version = data:match("VERSION:(.+)$")
 		local name = data:match("NAME:(.+)$")
@@ -206,9 +234,15 @@ if ops.b or ops.build then
 	io.write("Done. Reboot? [Y/n]")
 	local yn = io.read()
 	if yn:lower() ~= "n" then
-		print("Rebooting...") 
+		print("Rebooting...")
 		require("computer").shutdown(true)
 	end
+end
+if ops.a or ops.all then
+  print("Listing all installed packages:")
+  for file in fs.list("/usr/pkg") do
+    print(file)
+  end
 end
 if ops.u or ops.upgrade then
 	print("Preparing system upgrade...")

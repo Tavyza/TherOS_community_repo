@@ -1,0 +1,182 @@
+--[[
+functions:
+(arg)function;
+assignment:
+(arg)thing {
+} ravo;
+return;
+thing kaz; (where "thing" is what you're returning)
+
+module import;
+(module)kovazi; (var vaš (module)kovazi; "get module as 'var'")
+
+comment (gets completely removed in compiled form)
+// comment
+                               bool  num   str    table  "thing" (it guesses)
+variable assignment;             v    v     v      v      v
+hello <auš>5 ravo; (options are; ke, auš, šačaš, jena, eiðoč )
+
+constants won't exist
+
+between the value and "ravo" you can put "keðen" (open, aka public) to make a variable accessible anywhere
+
+tables;
+thing <jena> ravo; (or to preload it with data; thing <jena>[1, 2, 3] ravo;)
+
+say you import aužnogoi.gpu as gpu, you can use "gpu" to represent that. otherwise, you have to type out aužnogoi.gpu.
+
++ - * / //
+unary; thing+ ravo
+
+comparison;
+ra; ==, pdra; >=, jdra; <=, pd; >, jd; <, daira; !=
+and; .. za .. za 
+or; .. za .. þu
+not; daira
+
+control;
+if
+(condition)kai { }
+else
+(condition)kai { // if condition passes } za { // if condition fails } þu (yes, "if this or [do] this")
+else if
+(condition)kai { // if condition passes } za (condition2)kai {// if condition2 passes } þu
+
+while;
+(condition)þi { } (also repeat until)
+for;
+to(thing tableði)šai { } // for each thing in table (chop "to-" off for a normal for loop)
+
+break;
+maln;
+
+continue;
+nava;
+
+io would be a library under "aužnogoi" ("computer" or "system")
+as "aužnogoi.ažego"
+
+print; (text, newline)aužnogoi.agežo.naran; (newline is optional)
+read; thing (prompt)aužnogoi.agežo.seijez ravo; (this prints the prompt and returns the input to "thing")
+
+error; (would catch syntax errors at compile)
+!! ERROR !! at "test.pdj;42"
+thing 12 ravo;
+          ^ Expected variable type
+
+sleep & yield
+(time)tugera;
+
+conversions
+(thing)auš converts variable "thing" to a number (same with all other types)
+(thing)mobaða checks what type variable "thing" is
+
+
+// Example Prodeja code
+
+// Import libraries
+gpu vaš ("aužnogoi.gpu")kovazi;
+naran vaš ("aužnogoi.agežo.naran")kovazi;
+seijez vaš ("aužnogoi.agežo.seijez")kovazi;
+
+// Variables and math
+num 5 ravo;
+num2 10 ravo;
+result num + num2 ravo;
+result2 num * num2 ravo;
+
+// Conditionals
+(result 20 pdra)kai {
+    ("Result is greater than or equal to 20")naran;
+} za {
+    ("Result is less than 20")naran;
+} þu
+
+// Loops
+to(nums [1, 2, 3, 4, 5]ði)šai {
+    (num)naran;
+}
+
+// Input/output
+name ("What is your name?")seijez ravo;
+("Hello, "name" !")naran;
+
+// Type conversion and checking
+numStr "123" ravo;
+converted (numStr)auš ravo;
+type (converted)mobaða ravo;
+
+// Sleep example
+(1000)tugera; // Sleep for 1 second
+
+// While loop with break
+count 0 ravo;
+(count 5 jd)þi {
+    count+ ravo;
+    (count 3 ra)kai {
+        maln;
+    }
+}
+
+compiled:
+
+va1("aužnogoi.gpu")k;fn2("aužnogoi.agežo.naran")k;fn3("aužnogoi.agežo.seijez")k;va4=<n>5;va5=<n>10;va6=va4+va5;va7=va4*va5;
+(va6<n>20)grt{("Result is greater than or equal to 20")fn2;}or{("Result is less than 20")fn2;}each(va8 in<t>[1,2,3,4,5])for{(va8)fn2;}
+va9=("What is your name?")fn3;("Hello, "va9" !")fn2;va10=<s>"123";va11=(va10)nu;va12=(va11)ty;(1000)slp;va13=0;(va13<a>5)whl{va13+=1;if(va13==<n>3){brk;}}
+]]
+
+-- prodeja compiler
+
+help = [[
+How to use;
+pdc <input file> <output file>
+!! REQUIRES BOTH !! Input file must be a .pdj
+]]
+if #args < 2 then
+  print(help)
+  print("you forgot to do the thingy aaaaaaaaaaa")
+  return
+end
+local args, ops = require("shell").parse(...)
+
+local inputfile = io.open(arg[1], "r")
+local outputfile = io.open(arg[2], "w")
+local input = inputfile:read("*all")
+local output = ""
+inputfile:close()
+--[[local pdjtokens = {
+  leftparen: "(",
+  rightparen: ")",
+  leftbrace: "[",
+  rightbrace: "]",
+  leftcurly: "{",
+  rightcurly: "}",
+  doublequote: "\"",
+  singlequote: "'"
+  leftangle: "<",
+  rightangle: ">",
+  equals: "ravo", -- var definition
+  plus: "+",
+  minus: "-",
+  mult: "*",
+  div: "/",
+  mod: "//",
+  not: "daira",
+  and: "za",
+  or: "þu", 
+  testeq: "ra",
+  testgte: "pdra",
+  testlte: "jdra",
+  testgt: "pd",
+  testlt: "jd",
+  cond: "kai",
+  eol: ";"
+  comment: "#"
+}]]
+local function compile(input)
+  local lines = {};
+  for line in input:gmatch("[^\r\n]+") do
+    table.insert(lines, line);
+  end;
+  
+end

@@ -1,6 +1,0 @@
-VERSION:0.0.1
-NAME:tnal
-DESC:Tavyza Number Assembly Language, a compiled assembly language
-PROGRAM:tnal.lua
-PROGRAM:formatdisk.lua
-PROGRAM:tnemu.lua
