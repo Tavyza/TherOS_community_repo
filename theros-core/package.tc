@@ -13,3 +13,4 @@ DEPEND-source:https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/li
 DEPEND-source:https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/.config/general.tc
 DEPEND-source:https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/.config/gn-t1compat.tc
 DEPEND-source:https://raw.githubusercontent.com/Tavyza/TherOS/refs/heads/main/sys/.config/version.tc
+DEPEND-package:tc-read

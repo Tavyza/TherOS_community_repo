@@ -4,7 +4,7 @@ pkg-man@2
 snake@1
   snake game, filename is 'snak.lua'
 
-tc-read@2
+tc-read@3
   A library to read TherOS config files.
 
 theros-apps@1.1
