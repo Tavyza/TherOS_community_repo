@@ -123,6 +123,12 @@ if ops.i or ops.install then
 		end
 		if dependencies ~= nil and #dependencies > 0 then
 			for _, dependency in ipairs(dependencies) do -- reminder: formatted DEPEND:<file> (where the file is in the package folder)
+				local rel_path = dependency:sub(8)
+  				-- Extract the directory portion (everything before the final '/')
+  				local dir = rel_path:match("(.+)/[^/]+$")
+  				if dir then
+  				  fs.makeDirectory("/usr/lib/" .. dir)
+  				end
 				install_from_internet("https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/"..package.."/"..dependency, "/usr/lib/" .. dependency:sub(8)) --trim src/lib/ from the dependency name
 			end
 		end
