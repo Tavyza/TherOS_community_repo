@@ -158,37 +158,73 @@ if ops.i or ops.install then
 	end
 end
 if ops.r or ops.remove then
-	print("The following packages will be removed: ")
-	for _, arg in ipairs(args) do
-		print(arg)
+	-- list what we’re about to remove
+	io.write("The following packages will be removed: ")
+	for _, pkg in ipairs(args) do
+	  io.write(pkg, " ")
 	end
-	io.write("Do you want to continue? [y/N]")
-	local a = io.read()
-	if a:lower() ~= "y" then print("cancelled") return end
-	for _, package in ipairs(args) do
-		file = io.open("/usr/pkg/" .. package .. "_pkg.tc", "r")
-		contents = file:read("*a")
-		file:close()
-		for line in string.gmatch(contents, "[^\r\n]+") do
-			if line:match("PROGRAM-source:") then
-				local name = line:match("^.+/(.+)$")
-			elseif line:match("PROGRAM:") then
-				local name = line:match("PROGRAM(.+)$")
-			else
-				print("empty package.tc, exiting...")
-				return
-			end
-			io.write("Removing " .. name)
-			fs.remove("/usr/bin/" .. name)
-			if not fs.exists("/usr/bin/" .. name) then
-				print("[DONE]")
-				fs.remove("/usr/pkg/" .. package .. "_pkg.tc")
-			else
-				print("[FAILED]")
-			end
+	io.write("\nDo you want to continue? [y/N] ")
+	if io.read():lower() ~= "y" then
+	  print("Operation cancelled.")
+	  return
+	end
+  
+	for _, pkg in ipairs(args) do
+	  local pkgfile = "/usr/pkg/" .. pkg .. "_pkg.tc"
+	  local f, err = io.open(pkgfile, "r")
+	  if not f then
+		print("Cannot open " .. pkgfile .. ": " .. tostring(err))
+		goto continue_pkg
+	  end
+  
+	  local data = f:read("*a")
+	  f:close()
+  
+	  -- Extract PROGRAM and PROGRAM-source (if any)
+	  local prog_path      = data:match("PROGRAM:(.+)$")
+	  local prog_src_path  = data:match("PROGRAM%-source:(.+)$")
+  
+	  -- Helper to strip directories
+	  local function basename(path)
+		return path:match("([^/]+)$")
+	  end
+  
+	  -- Remove the main binary
+	  if prog_path then
+		local bin = basename(prog_path)
+		io.write("Removing binary: " .. bin .. " ... ")
+		fs.remove("/usr/bin/" .. bin)
+		if not fs.exists("/usr/bin/" .. bin) then
+		  print("[DONE]")
+		else
+		  print("[FAILED]")
 		end
+	  end
+  
+	  -- Remove any source file
+	  if prog_src_path then
+		local src = basename(prog_src_path)
+		io.write("Removing source: " .. src .. " ... ")
+		fs.remove("/usr/bin/" .. src)
+		if not fs.exists("/usr/bin/" .. src) then
+		  print("[DONE]")
+		else
+		  print("[FAILED]")
+		end
+	  end
+  
+	  -- Finally remove the package descriptor
+	  io.write("Cleaning up package file ... ")
+	  fs.remove(pkgfile)
+	  if not fs.exists(pkgfile) then
+		print("[DONE]")
+	  else
+		print("[FAILED]")
+	  end
+  
+	  ::continue_pkg::
 	end
-end
+  end  
 if ops.l or ops.list then
 	install_from_internet("https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/refs/heads/main/repo_list.txt", "/tmp/repo_list.txt")
 	local file = io.open("/tmp/repo_list.txt")
