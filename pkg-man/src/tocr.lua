@@ -183,7 +183,10 @@ if ops.r or ops.remove then
 	end
 end
 if ops.l or ops.list then
-	local handle = int.open("https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/")
+	install_from_internet("https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/refs/heads/main/repo_list.txt", "/tmp/repo_list.txt")
+	local file = io.open("/tmp/repo_list.txt")
+	print(file:read("*a"))
+	file:close()
 end
 if ops.b or ops.build then
 	print("Preparing to build TherOS...")
