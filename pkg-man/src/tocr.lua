@@ -126,8 +126,16 @@ if ops.i or ops.install then
 			  local rel_path = dependency:match("^src/.+/(.+)$") or dependency:sub(8) -- fallback
 			  local dir = rel_path:match("(.+)/[^/]+$")
 			  if dir then
-			    fs.makeDirectory("/usr/lib/" .. dir)
+			    local full_path = "/usr/lib/" .. dir
+			    local current = ""
+			    for part in full_path:gmatch("[^/]+") do
+			      current = current .. "/" .. part
+			      if not fs.exists(current) then
+			        fs.makeDirectory(current)
+			      end
+			    end
 			  end
+
 			  install_from_internet(
 			    "https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/" .. package .. "/" .. dependency,
 			    "/usr/lib/" .. rel_path
@@ -156,14 +164,18 @@ if ops.i or ops.install then
 		if data:match("PROGRAM:(.+)$") then
 			install_from_internet("https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/"..package.."/"..data:match("PROGRAM:(.+)$"), "/usr/bin/" .. data:match("PROGRAM:(.+)$"):sub(4))
 		end
-		if data:match("PROGRAM-source:(.+)$") then
-			local filename = data:match("PROGRAM-source:(.+)$"):match("[^/]+$")
-			if filename then
-				install_from_internet(data:match("PROGRAM-source:(.+)$"), "/usr/bin/" .. filename)
-			else
-				print("failed to identify filename")
-			end
+		for line in data:gmatch("[^\r\n]+") do
+		  local src = line:match("PROGRAM%-source:(.+)")
+		  if src then
+		    local filename = src:match("[^/]+$")
+		    if filename then
+		      install_from_internet(src, "/usr/bin/" .. filename)
+		    else
+		      print("Failed to identify filename from source: " .. src)
+		    end
+		  end
 		end
+
 		print("[DONE]")
 	end
 end
@@ -306,8 +318,12 @@ local function parse_version(version)
   for part in version:gmatch("[^.]+") do
     table.insert(parts, tonumber(part) or 0)
   end
+  while #parts < 3 do
+    table.insert(parts, 0)
+  end
   return parts
 end
+
 
 local function is_version_newer(local_ver, remote_ver)
   local lv = parse_version(local_ver)
