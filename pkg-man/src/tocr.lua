@@ -170,7 +170,14 @@ if ops.r or ops.remove then
 		contents = file:read("*a")
 		file:close()
 		for line in string.gmatch(contents, "[^\r\n]+") do
-			local name = line:match("^.+/(.+)$")
+			if line:find("PROGRAM-source:") then
+				local name = line:match("^.+/(.+)$")
+			elseif line:find("PROGRAM:") then
+				local name = line:match("PROGRAM(.+)$")
+			else
+				print("empty package.tc, exiting...")
+				return
+			end
 			io.write("Removing " .. name)
 			fs.remove("/usr/bin/" .. name)
 			if not fs.exists("/usr/bin/" .. name) then
