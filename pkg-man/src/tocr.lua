@@ -158,6 +158,8 @@ if ops.i or ops.install then
 			local filename = data:match("PROGRAM-source:(.+)$"):match("[^/]+$")
 			if filename then
 				install_from_internet(data:match("PROGRAM-source:(.+)$"), "/usr/bin/" .. filename)
+			else
+				print("failed to identify filename")
 			end
 		end
 		print("[DONE]")
