@@ -1,4 +1,4 @@
-pkg-man@2
+pkg-man@4
   package manager for TherOS. use "tocr"
 
 snake@1
