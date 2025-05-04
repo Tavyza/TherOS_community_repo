@@ -1,4 +1,4 @@
-VERSION:2
+VERSION:3
 NAME:pkg-man
 DESC:package manager for TherOS. use "tocr"
 PROGRAM:src/tocr.lua
