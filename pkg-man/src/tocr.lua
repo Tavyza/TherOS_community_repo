@@ -146,7 +146,7 @@ if ops.i or ops.install then
 	for _, package in ipairs(args) do
 		io.write("Installing " .. package .. "...")
 		if data:match("PROGRAM:(.+)$") then
-			install_from_internet("https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/"..package.."/"..data:match("PROGRAM:(.+)$"), "/usr/bin/" .. data:match("PROGRAM:(.+)$")) -- match filename after last slash
+			install_from_internet("https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/"..package.."/"..data:match("PROGRAM:(.+)$"), "/usr/bin/" .. data:match("PROGRAM:(.+)$"):sub(4))
 		end
 		if data:match("PROGRAM-source:(.+)$") then
 			local filename = data:match("PROGRAM-source:(.+)$"):match("[^/]+$")
