@@ -236,6 +236,7 @@ if ops.l or ops.list then
 	local file = io.open("/tmp/repo_list.txt")
 	print(file:read("*a"))
 	file:close()
+	fs.remove("/tmp/repo_list.txt")
 end
 if ops.b or ops.build then
 	print("Preparing to build TherOS...")
@@ -296,10 +297,85 @@ if ops.a or ops.all then
     print(file)
   end
 end
-if ops.u or ops.upgrade then
-	print("Preparing system upgrade...")
-	print("[ERROR] FUNCTION NOT COMPLETED YET")
-	return
+local function parse_version(version)
+  local parts = {}
+  for part in version:gmatch("[^.]+") do
+    table.insert(parts, tonumber(part) or 0)
+  end
+  return parts
 end
+
+local function is_version_newer(local_ver, remote_ver)
+  local lv = parse_version(local_ver)
+  local rv = parse_version(remote_ver)
+  local len = math.max(#lv, #rv)
+  for i = 1, len do
+    local l = lv[i] or 0
+    local r = rv[i] or 0
+    if r > l then return true end
+    if r < l then return false end
+  end
+  return false
+end
+
+if ops.u or ops.upgrade then
+  print("Preparing all packages upgrade...")
+
+  for file in fs.list("/usr/pkg") do
+    local pkgname = file:match("^(.-)_pkg%.tc$")
+    if pkgname then
+      local local_path = "/usr/pkg/" .. file
+      local f = io.open(local_path, "r")
+      local local_data = f:read("*a")
+      f:close()
+
+      local local_version = local_data:match("VERSION:(.+)$")
+
+      local remote_temp = "/tmp/latest_package.tc"
+      install_from_internet(
+        "https://raw.githubusercontent.com/Tavyza/TherOS_community_repo/main/" .. pkgname .. "/package.tc",
+        remote_temp
+      )
+
+      if not fs.exists(remote_temp) then
+        print("Could not fetch latest info for: " .. pkgname)
+        goto continue
+      end
+
+      local rf = io.open(remote_temp, "r")
+      local remote_data = rf:read("*a")
+      rf:close()
+      fs.remove(remote_temp)
+
+      local remote_version = remote_data:match("VERSION:(.+)$")
+
+      if not remote_version then
+        print("No VERSION in remote package for " .. pkgname .. ", skipping.")
+        goto continue
+      end
+
+      if not local_version or is_version_newer(local_version, remote_version) then
+        print("Upgrading " .. pkgname .. " from " .. (local_version or "unknown") .. " to " .. remote_version .. "...")
+        shell.execute("tocr -i " .. pkgname)
+      else
+        -- Optional: check if dependencies are still present
+        print(pkgname .. " is up to date, checking dependencies...")
+        for line in remote_data:gmatch("[^\r\n]+") do
+          local dep = line:match("DEPEND:(.+)$")
+          if dep and not fs.exists("/usr/lib/" .. dep:sub(8)) then
+            print("Missing dependency: " .. dep)
+            shell.execute("tocr -i " .. pkgname)
+            break
+          end
+        end
+      end
+
+      ::continue::
+    end
+  end
+
+  return
+end
+
 --installedlist:write(tblstring(packages))
 --installedlist:close()
